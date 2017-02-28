@@ -1,0 +1,44 @@
+<div ng-controller="mainController">
+
+<p><a href="#/create">Create a New Poll</a> | <a href="#/">Logout</a> </p>
+<h1>Welcome, <span ng-bind="currentUser.name"></span>! </h1>
+
+
+<h3>Current Polls:</h3>
+<div class="container">
+<input type='text' placeholder='search...' ng-model='filter_name'>
+</div>
+
+<table class="bordered">
+	<thead>
+		<tr>
+			<th>
+				Name
+			</th>
+			<th>
+				Survey Question
+			</th>
+			<th>
+				Date Posted
+			</th>
+			<th>
+				Action
+			</th>
+		</tr>
+	</thead>
+	<tbody ng-repeat="survey in surveys|filter:filter_name">
+		<tr>
+			<td ng-bind="survey.name"></td>
+			<td><a ng-href="#/surveys/{{survey._id}}" ng-bind="survey.question"></a></td>
+			<td ng-bind="survey.created_at | date: 'MMMM, dd, yyyy'"></td>
+			<td ng-show="survey.user_id === currentUser._id">
+					<form ng-submit="deleteSurvey(survey._id)">
+						<button class="waves-effect waves-light red btn">Delete</button>
+					</form>
+			</td>
+		</tr>
+
+	</tbody>
+</table>
+
+</div>

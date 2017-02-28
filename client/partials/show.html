@@ -1,0 +1,54 @@
+<div ng-controller="surveyController">
+	<a href="#/main">Go to Polls</a>
+	<h2><span ng-bind="survey.question"></span></h2>
+	<p>Click the Vote button to choose one</p>
+
+	<table class="bordered">
+		<thead>
+			<tr>
+				<th>Option</th>
+				<th>Current Count of Votes</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td ng-bind="survey.option1"></td>
+				<td ng-bind="survey.option1Vote"></td>
+				<td>
+					<form ng-submit="updateOption1Vote(survey._id)">
+						<button class="btn waves-red">Vote</button>
+					</form>
+				</td>
+			</tr>
+			<tr>
+				<td ng-bind="survey.option2"></td>
+				<td ng-bind="survey.option2Vote"></td>
+				<td>
+					<form ng-submit="updateOption2Vote(survey._id)">
+						<button class="btn waves-red">Vote</button>
+					</form>
+				</td>
+			</tr>
+				<tr>
+				<td ng-bind="survey.option3"></td>
+				<td ng-bind="survey.option3Vote"></td>
+				<td>
+					<form ng-submit="updateOption3Vote(survey._id)">
+						<button class="btn waves-red">Vote</button>
+					</form>
+				</td>
+
+			</tr>
+			<tr>
+				<td ng-bind="survey.option4"></td>
+				<td ng-bind="survey.option4Vote"></td>
+				<td>
+					<form ng-submit="updateOption4Vote(survey._id)">
+						<button class="btn waves-red">Vote</button>
+					</form>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</div>

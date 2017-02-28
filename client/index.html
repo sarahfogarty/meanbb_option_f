@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html ng-app="app">
+<head>
+	<meta charset="UTF-8">
+	<title>Dashboard</title>
+
+	<script type="text/javascript" src="/js/lib/angular.js"></script>
+	<script type="text/javascript" src="/js/lib/angular-route.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/css/materialize.min.css">
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/js/materialize.min.js"></script>
+
+    <script>
+    var app = angular.module('app',['ngRoute']);
+
+    app.config(function($routeProvider){
+    	$routeProvider
+    	.when('/', {
+    		// controller: 'HomeController'
+    		templateUrl: '/partials/login.html'
+    	})
+
+    	.when('/main', {
+    		templateUrl:'/partials/main.html'
+    	})
+
+    	.when('/create', {
+    		templateUrl:'/partials/create.html'
+    	})
+
+    	.when('/surveys/:id', {
+    		templateUrl:'/partials/show.html'
+    	})
+    	.otherwise('/')
+    })
+
+    //Factories
+
+    app.factory("userFactory", function($http){
+    	var user ={};
+    	user.name = "";
+    	return {
+    		getName:function(callback){
+    			callback(user);
+    		},
+
+    		setName:function(input,callback){
+    			console.log('userFactory, setName',input);
+    			$http.post("/users",input).then(function(response){
+    				if(response.data.err){
+    					callback(response.data.err)
+    				}
+    				else {
+    					user = response.data.user;
+    					callback(null);
+    				}
+    			});
+    		}
+    	}
+    })
+
+    app.factory('surveyFactory', function($http){
+    	return {
+    		createSurvey:function(newSurvey,callback){
+    			$http.post('/survey', newSurvey).then(function(response){
+    				if(response.data.err){
+    					callback(response.data.err)
+    				}
+    				else {
+    					user = response.data.user;
+    					callback(null);
+    				}
+    			})
+    		},
+
+    		listAll: function(callback){
+    			$http.get('/surveys').then(callback);
+    		},
+
+    		deleteSurvey: function(id, callback){
+    			$http.delete('/survey/'+id).then(callback);
+    		},
+
+    		readSurvey:function(id,callback){
+    			$http.get('/survey/'+id).then(callback);
+    		},
+
+    		updateOption1Vote: function(id, callback){
+    			$http.patch('/survey/option1/'+id).then(callback);
+    		},
+    		updateOption2Vote: function(id, callback){
+    			$http.patch('/survey/option2/'+id).then(callback);
+    		},
+    		updateOption3Vote: function(id, callback){
+    			$http.patch('/survey/option3/'+id).then(callback);
+    		},
+    		updateOption4Vote: function(id, callback){
+    			$http.patch('/survey/option4/'+id).then(callback);
+    		},
+    	}
+    })
+
+    //controllers
+
+    app.controller("mainController", function($location, surveyFactory,userFactory,$route,$scope){
+    	$scope.currentUser={};
+
+    	userFactory.getName(function(data){
+    		if(!data.name){
+    			$location.url('/');
+    		}
+    		else{
+    			$scope.currentUser = data;
+    		}
+    	})
+
+    	$scope.createSurvey = function(newSurvey, user){
+    		newSurvey.name = user.name;
+    		newSurvey.user_id = user;
+    		surveyFactory.createSurvey(newSurvey, function(err){
+    			if(err){
+    				$scope.error = err;
+    				console.log("createSurvye err",$scope.error);
+    			}
+    			else {
+    				$location.url('main');
+    			}
+    		})
+    		$scope.newSurvey={};
+    	}
+
+    	function getSurveys(){
+    		surveyFactory.listAll(function(response){
+    			$scope.surveys =response.data;
+    			console.log("getSurveys", $scope.surveys);
+    			})
+    		}
+    	getSurveys();
+
+    	$scope.deleteSurvey = function(id){
+    		surveyFactory.deleteSurvey(id,function(response){
+    			getSurveys();
+    		})
+    	}
+
+
+
+    })
+
+    app.controller('loginController', function(userFactory,$location){
+
+    	// userFactory.getName(function(data){
+    	// 	if(data.name){
+    	// 		$location.url('main');
+    	// 	}
+    	// })
+
+    	var self = this;
+
+    	this.requestName = function(input) {
+    		this.error = {};
+    		console.log("requestName",input)
+    		userFactory.setName(input,function(err){
+    			if(err){
+    				console.log("usersCtrl requestName", err);
+    				self.error = err;
+    			}
+    			else{
+    				userFactory.getName(function(data){
+    					console.log("usersCtrl requestName",data);
+    					$location.url('main');
+    				})
+    			}
+    		})
+    		this.input = {};
+    	}
+    })
+
+    app.controller("surveyController", function($scope, userFactory, surveyFactory, $routeParams, $location){
+    	var id = $routeParams.id
+
+    	function readSurvey(){
+    		surveyFactory.readSurvey(id, function(response){
+    			console.log('readSurvey',response);
+    			$scope.survey =response.data;
+    			})
+    		}
+
+    	readSurvey();
+
+    	$scope.updateOption1Vote = function(id){
+    		surveyFactory.updateOption1Vote(id, function(response){
+    			readSurvey();
+    		})
+    	}
+    	$scope.updateOption2Vote = function(id){
+    		surveyFactory.updateOption2Vote(id, function(response){
+    			readSurvey();
+    		})
+    	}
+    	$scope.updateOption3Vote = function(id){
+    		surveyFactory.updateOption3Vote(id, function(response){
+    			readSurvey();
+    		})
+    	}
+    	$scope.updateOption4Vote = function(id){
+    		surveyFactory.updateOption4Vote(id, function(response){
+    			readSurvey();
+    		})
+    	}
+
+    })
+
+    </script>
+
+<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+</style>
+
+</head>
+<body ng-controller="mainController">
+	<div ng-view="">
+
+	</div>
+</body>
+</html>
